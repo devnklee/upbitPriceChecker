@@ -1,0 +1,13 @@
+upperPercentage 2.0
+lowerPercentage 2.0
+Table for Simple Price check
+KRW BTC
+KRW ADA
+KRW ETH
+KRW XRP
+KRW QTUM
+KRW NEO
+KRW SNT
+Table for Price check with upper and lower chekcer
+KRW QTUM 200 0
+KRW QTUM 300 2
