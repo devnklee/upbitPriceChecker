@@ -17,6 +17,8 @@ import java.util.TimerTask;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -28,6 +30,8 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 
@@ -52,6 +56,8 @@ public class SampleController implements Initializable {
 	@FXML private TableColumn<TableDataModelWithStatus, String> price2;
 	@FXML private TableColumn<TableDataModelWithStatus, String> lowStatus;
 	@FXML private TableColumn<TableDataModelWithStatus, String> highStatus;
+	@FXML private Label calculatedUpper;
+	@FXML private Label calculatedLower;	
 
 
 	private boolean stop;
@@ -174,8 +180,8 @@ public class SampleController implements Initializable {
             writer.write("Table for Price check with upper and lower chekcer\n");
             for (int i = 0 ; i <mySecondTable.getItems().size() ; i++ ) {
             	writer.write(mySecondTable.getItems().get(i).coinProperty().getValue() + " " +
-            			mySecondTable.getItems().get(i).upperValueProperty().getValue() + " " +
-            			mySecondTable.getItems().get(i).lowerValueProperty().getValue());
+            			mySecondTable.getItems().get(i).lowerValueProperty().getValue() + " " +
+            			mySecondTable.getItems().get(i).upperValueProperty().getValue());
             writer.newLine();
             }
             
@@ -212,6 +218,8 @@ public class SampleController implements Initializable {
 				protected void updateItem(String item, boolean empty) {
 					super.updateItem(item, empty);
 
+					DecimalFormat df = new DecimalFormat("#,##0");
+					
 					if (item == null || empty) {
 
 					} else {
@@ -226,16 +234,17 @@ public class SampleController implements Initializable {
 
 							if (Double.valueOf(PriceCell) <= (Double.valueOf(item.toString()) / 100.0 * (100.0 + lowerPercentage))) {
 								Platform.runLater(()-> {
-									setText(item);
+									setText(df.format(Double.valueOf(item)));
 									setStyle("-fx-background-color: red");
 								});
 								//Set the style in the first cell based on the value of the second cell
 							} else {
-								setText(item);
+								setText(df.format(Double.valueOf(item)));
 								setStyle("");
 							}
 						}
 
+	
 
 					}
 				}
@@ -247,7 +256,7 @@ public class SampleController implements Initializable {
 					return new TableCell <TableDataModelWithStatus, String > () {
 						protected void updateItem(String item, boolean empty) {
 							super.updateItem(item, empty);
-		
+							DecimalFormat df = new DecimalFormat("#,##0");
 							if (item == null || empty) {
 
 							} else {
@@ -261,15 +270,15 @@ public class SampleController implements Initializable {
 
 
 									if (Double.valueOf(PriceCell) >= (Double.valueOf(item.toString()) / 100.0 * (100.0 - upperPercentage))) {
-									System.out.println((Double.valueOf(item.toString()) / 100.0 * (100.0 - upperPercentage)));
+									//System.out.println((Double.valueOf(item.toString()) / 100.0 * (100.0 - upperPercentage)));
 
 										Platform.runLater(()-> {
-											setText(item);
+											setText(df.format(Double.valueOf(item)));
 											setStyle("-fx-background-color: red");
 										});
 										//Set the style in the first cell based on the value of the second cell
 									} else {
-										setText(item);
+										setText(df.format(Double.valueOf(item)));
 										setStyle("");
 									}
 								}
@@ -279,12 +288,29 @@ public class SampleController implements Initializable {
 						}
 					};
 				});
+		
 
+		mySecondTable.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
 
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
+				// TODO Auto-generated method stub
+				if (mySecondTable.getSelectionModel().getSelectedItem() != null) {
+					String value = mySecondTable.getSelectionModel().getSelectedItem().upperValueProperty().getValue();
+					calculatedUpper.setText(Double.toString(Double.valueOf(value) / 100.0 * (100.0 - upperPercentage)));
+					String value2 = mySecondTable.getSelectionModel().getSelectedItem().lowerValueProperty().getValue();
+					calculatedLower.setText(Double.toString(Double.valueOf(value2) / 100.0 * (100.0 + lowerPercentage)));
+				}
+			}
+			
+		});
+		
 		addButton.setOnAction(event->addItemToTable(event));
 		deleteButton.setOnAction(event ->deleteSelectedItem(event));
 		toRight.setOnAction(event->moveItemToRight(event));
 		toLeft.setOnAction(event -> deleteSelectedItemFromSecondTable(event));
+		
+		
 
 	}
 
